@@ -24,12 +24,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private FPS fpsObject;
     private Player player;
     private ArrayList<Meteor> meteors;
-    private Meteor meteor;
-    private Laser laser;
+    private ArrayList <Laser> lasers;
     private long meteorsStartTime;
+    private long laserStartTime;
     private Random rand = new Random();
     private int random = 0;
     private boolean threadRunning = false;
+    private boolean fire = false;
     private int x[] = new int [10];
 
     public GamePanel(Context context) {
@@ -50,10 +51,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
             fpsObject = new FPS();
             player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
-            meteor = new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt1));
             meteors = new ArrayList<Meteor>();
-            laser = new Laser();
+            lasers = new ArrayList<Laser>();
             meteorsStartTime = System.nanoTime();
+            laserStartTime = System.nanoTime();
 
         thread =  new MainThread(getHolder(),this);
         if(!threadRunning) {
@@ -147,17 +148,33 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
         fpsObject.setFPS(fps);
         player.update();
-        //updateRocks();
-        //meteor.update();
         updateMeteors();
+        updateLasers();
+    }
 
-        if(laser.getActive()) {
-            laser.update();
+    private void updateLasers() {
+        if(player.getPlaying()) {
+            for(int i = 0; i<lasers.size();i++) {
+                lasers.get(i).update();
+                if(lasers.get(i).getX() > screenWidth+lasers.get(i).getWidth()) {
+                    lasers.remove(i);
+                }
+            }
+
+            for(int i=0;i<lasers.size();i++) {
+                for(int j=0;j<meteors.size();j++) {
+                    if(collision(lasers.get(i),meteors.get(j))) {
+                        lasers.remove(i);
+                        meteors.remove(j);
+                        break;
+                    }
+                }
+            }
         }
-
-        if(laser.getX() > GamePanel.screenWidth + screenWidth/4) {
-            laser.setActive(false);
-            laser.reset();
+        else{
+            for(int i=0;i<lasers.size();i++) {
+                lasers.remove(i);
+            }
         }
     }
 
@@ -215,15 +232,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     resetGame();
                     break;
                 }
-
-                if(collision(meteors.get(i),laser)) {
-                    meteors.remove(i);
-                    break;
-                }
             }
-
-
-
         } else {
             for(int i=0; i<meteors.size();i++) {
                 meteors.remove(i);
@@ -233,8 +242,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     private void resetGame() {
         player.setPlaying(false);
-        laser.setActive(false);
-        laser.reset();
+        fire = false;
     }
 
     @SuppressLint("MissingSuperCall")
@@ -254,9 +262,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 m.draw(canvas);
             }
 
-            if(laser.getActive()) {
-                laser.draw(canvas);
+            for(Laser l: lasers) {
+                l.draw(canvas);
             }
+
 
             fpsObject.draw(canvas);
             canvas.restoreToCount(savedState);
@@ -273,21 +282,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void useLaser() {
-        if(!laser.getActive()) {
-
-            int laserX = player.getWidth()+100;
-            int laserY = player.getY()+(player.getHeight()/2)- 15; //15 is half of the height of 30 height
-
-            laser.setX(laserX);
-            laser.setY(laserY);
-
-            int laserWidth = laser.getX() + (GamePanel.screenWidth/4);
-            int laserHeight = player.getY() + (player.getHeight() / 2) + 30; //30 is 2 times the -15 Y
-
-            laser.setWidth(laserWidth);
-            laser.setHeight(laserHeight);
-
-            laser.setActive(true);
+        fire = true;
+        if(player.getPlaying()) {
+            long elapsed = (System.nanoTime() - laserStartTime)/1000000;
+            if(elapsed > 300) {
+                lasers.add(new Laser(BitmapFactory.decodeResource(getResources(),R.drawable.laser),
+                        player.getX()+player.getWidth()/2,player.getY()+player.getHeight()/2));
+                laserStartTime = System.nanoTime();
+            }
         }
     }
 
