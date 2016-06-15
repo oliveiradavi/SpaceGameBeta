@@ -10,6 +10,7 @@ public class Player extends GameObject {
     private int velocity = 13;
     private boolean keyDown = false;
     private boolean playing = false;
+    private boolean fire = false;
 
     public Player(Bitmap sprite) {
         image = new Bitmap[1];
@@ -35,6 +36,14 @@ public class Player extends GameObject {
 
     public boolean getPlaying() {
         return playing;
+    }
+
+    public void setFire(boolean fire) {
+        this.fire = fire;
+    }
+
+    public boolean getFire() {
+        return fire;
     }
 
 

@@ -30,7 +30,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Random rand = new Random();
     private int random = 0;
     private boolean threadRunning = false;
-    private boolean fire = false;
     private int x[] = new int [10];
 
     public GamePanel(Context context) {
@@ -89,17 +88,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public boolean onTouchEvent(MotionEvent event) {
 
         int index = event.getActionIndex();
-        int pointerId = event.getPointerId(index);
         int action = event.getActionMasked();
 
         switch (action) {
 
             case MotionEvent.ACTION_DOWN: {
-                x[0] = (int) event.getX();
+                x[index] = (int) event.getX(index);
                 player.setPlaying(true);
-
-                buttonPressed(x[0]);
-                System.out.println("The index is: "+index);
+                buttonPressed(x[index]);
                 break;
             }
 
@@ -111,15 +107,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             case MotionEvent.ACTION_UP: {
-                if(x[index] < screenWidth/2) {
-                    player.setUp(false);
-                }
+                player.setUp(false);
+                player.setFire(false);
                 break;
             }
             case MotionEvent.ACTION_POINTER_UP: {
             // when order of touch and release is the same
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
+                }else{
+                    player.setFire(false);
                 }
                 break;
             }
@@ -127,12 +124,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                             // for any order of two pointers
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
+                }else{
+                    player.setFire(false);
                 }
                 break;
             }
             case MotionEvent.ACTION_POINTER_UP + ((2 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
+                }else{
+                    player.setFire(false);
                 }
                 break;
             }
@@ -149,6 +150,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         fpsObject.setFPS(fps);
         player.update();
         updateMeteors();
+
+        if(player.getFire()) {
+            useLaser();
+        }
+
         updateLasers();
     }
 
@@ -160,7 +166,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     lasers.remove(i);
                 }
             }
-
             for(int i=0;i<lasers.size();i++) {
                 for(int j=0;j<meteors.size();j++) {
                     if(collision(lasers.get(i),meteors.get(j))) {
@@ -229,7 +234,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             for(int i = 0; i <meteors.size(); i++) {
                 if(collision(meteors.get(i),player)) {
                     meteors.remove(i);
-                    resetGame();
+                   // resetGame();
                     break;
                 }
             }
@@ -242,7 +247,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     private void resetGame() {
         player.setPlaying(false);
-        fire = false;
+        player.setFire(false);
     }
 
     @SuppressLint("MissingSuperCall")
@@ -274,6 +279,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     public void buttonPressed(int n) {
             if(n > screenWidth/2){
+                player.setFire(true);
                 useLaser();
                 //System.out.println("Button Pressed!");
             } else {
@@ -282,15 +288,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void useLaser() {
-        fire = true;
-        if(player.getPlaying()) {
-            long elapsed = (System.nanoTime() - laserStartTime)/1000000;
-            if(elapsed > 300) {
-                lasers.add(new Laser(BitmapFactory.decodeResource(getResources(),R.drawable.laser),
-                        player.getX()+player.getWidth()/2,player.getY()+player.getHeight()/2));
-                laserStartTime = System.nanoTime();
+            if(player.getPlaying()) {
+                long elapsed = (System.nanoTime() - laserStartTime)/1000000;
+                if(elapsed > 300) {
+                    lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
+                            player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
+                    laserStartTime = System.nanoTime();
+                }
             }
-        }
     }
 
     public boolean collision(GameObject a, GameObject b) {
