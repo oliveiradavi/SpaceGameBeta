@@ -25,6 +25,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private MainThread thread;
     private Background background;
     private Player player;
+    private Fire fire;
     private ArrayList<Meteor> meteors;
     private ArrayList <Laser> lasers;
     private long meteorsStartTime;
@@ -47,6 +48,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         screenHeight = getHeight();
         background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
         player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
+        fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.fire));
         meteors = new ArrayList<Meteor>();
         lasers = new ArrayList<Laser>();
         meteorsStartTime = System.nanoTime();
@@ -145,6 +147,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if(player.getPlaying()){
             background.update();
             player.update();
+            fire.update(player.getY() + player.getHeight()/2);
             updateMeteors();
             updateLasers();
         }
@@ -170,9 +173,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             for(int i=0;i<lasers.size();i++) {
                 for(int j=0;j<meteors.size();j++) {
                     if(collision(lasers.get(i),meteors.get(j))) {
+                        score+= meteors.get(j).getScore();
                         lasers.remove(i);
                         meteors.remove(j);
-                        score+=100;
+
                         break;
                     }
                 }
@@ -195,31 +199,31 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             if(elapsed > random.nextInt(400)+200){
                 switch (condition) {
                     case 1:{
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt6)));
+                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt1),50));
                         break;
                     }
                     case 2: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt2)));
+                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt2),60));
                         break;
                     }
                     case 3: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt3)));
+                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt3),70));
                         break;
                     }
                     case 4: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt4)));
+                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt4),80));
                         break;
                     }
                     case 5: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt5)));
+                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt5),90));
                         break;
                     }
                     case 6: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt6)));
+                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt6),100));
                         break;
                     }
                     default: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt1)));
+                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt1),50));
                         break;
                     }
                 }
@@ -253,6 +257,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         score = 0;
         updateMeteors();
         updateLasers();
+        fire.reset();
         player.update();
     }
 
@@ -261,7 +266,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         //It pauses the game, is does not unpause yet
         player.setPlaying(false);
         player.setFire(false);
-
     }
 
 
@@ -277,6 +281,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             canvas.scale(scaleFactorX, scaleFactorY);
             background.draw(canvas);
             player.draw(canvas);
+            fire.draw(canvas);
 
             for(Meteor m: meteors) {
                 m.draw(canvas);

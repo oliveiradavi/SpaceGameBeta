@@ -9,9 +9,11 @@ public class Meteor extends GameObject {
     private Bitmap[] image;
     private Random rand;
     private Animation animation;
+    private int score;
 
+    public Meteor(Bitmap sprite, int score) {
 
-    public Meteor(Bitmap sprite) {
+        this.score = score;
         animation = new Animation();
         rand = new Random();
         image = new Bitmap[1];
@@ -35,5 +37,9 @@ public class Meteor extends GameObject {
     public void draw(Canvas canvas)
     {
         canvas.drawBitmap(animation.getImage(),x,y,null);
+    }
+
+    public int getScore() {
+        return score;
     }
 }
