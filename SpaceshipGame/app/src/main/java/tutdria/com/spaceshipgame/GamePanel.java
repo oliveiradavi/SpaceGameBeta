@@ -1,9 +1,10 @@
 package tutdria.com.spaceshipgame;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -19,18 +20,17 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public static int screenWidth;
     public static int screenHeight;
     public int fps;
+    public int score;
+    private int x[] = new int [10];
     private MainThread thread;
     private Background background;
-    private FPS fpsObject;
     private Player player;
     private ArrayList<Meteor> meteors;
     private ArrayList <Laser> lasers;
     private long meteorsStartTime;
     private long laserStartTime;
-    private Random rand = new Random();
-    private int random = 0;
     private boolean threadRunning = false;
-    private int x[] = new int [10];
+
 
     public GamePanel(Context context) {
         super(context);
@@ -45,15 +45,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-            screenWidth = getWidth();
-            screenHeight = getHeight();
-            background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
-            fpsObject = new FPS();
-            player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
-            meteors = new ArrayList<Meteor>();
-            lasers = new ArrayList<Laser>();
-            meteorsStartTime = System.nanoTime();
-            laserStartTime = System.nanoTime();
+        screenWidth = getWidth();
+        screenHeight = getHeight();
+        background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
+        player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
+        meteors = new ArrayList<Meteor>();
+        lasers = new ArrayList<Laser>();
+        meteorsStartTime = System.nanoTime();
+        laserStartTime = System.nanoTime();
+        score = 0;
 
         thread =  new MainThread(getHolder(),this);
         if(!threadRunning) {
@@ -73,8 +73,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         boolean retry = true;
 
-        while(retry)
-        {
+        while(retry) {
             try{thread.setRunning(false);
                 thread.join();
             }catch(InterruptedException e){e.printStackTrace();}
@@ -82,7 +81,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
 
     }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -111,6 +109,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 player.setFire(false);
                 break;
             }
+
             case MotionEvent.ACTION_POINTER_UP: {
             // when order of touch and release is the same
                 if(x[index] < screenWidth/2) {
@@ -120,6 +119,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 break;
             }
+
             case MotionEvent.ACTION_POINTER_UP + ((1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
                             // for any order of two pointers
                 if(x[index] < screenWidth/2) {
@@ -129,6 +129,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 break;
             }
+
             case MotionEvent.ACTION_POINTER_UP + ((2 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
@@ -137,7 +138,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 break;
             }
-
         }
         return true;
     }
@@ -146,19 +146,21 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         if(player.getPlaying()){
             background.update();
+            player.update();
+            updateMeteors();
+            updateLasers();
+        } else{
+            resetGame();
         }
-        fpsObject.setFPS(fps);
-        player.update();
-        updateMeteors();
+
+
+    }
+
+    private void updateLasers() {
 
         if(player.getFire()) {
             useLaser();
         }
-
-        updateLasers();
-    }
-
-    private void updateLasers() {
         if(player.getPlaying()) {
             for(int i = 0; i<lasers.size();i++) {
                 lasers.get(i).update();
@@ -171,12 +173,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     if(collision(lasers.get(i),meteors.get(j))) {
                         lasers.remove(i);
                         meteors.remove(j);
+                        score+=100;
                         break;
                     }
                 }
             }
         }
-        else{
+        else {
             for(int i=0;i<lasers.size();i++) {
                 lasers.remove(i);
             }
@@ -234,7 +237,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             for(int i = 0; i <meteors.size(); i++) {
                 if(collision(meteors.get(i),player)) {
                     meteors.remove(i);
-                   // resetGame();
+                    resetGame();
                     break;
                 }
             }
@@ -248,11 +251,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void resetGame() {
         player.setPlaying(false);
         player.setFire(false);
+        score = 0;
     }
 
-    @SuppressLint("MissingSuperCall")
     @Override
     public void draw(Canvas canvas) {
+        super.draw(canvas);
 
         final float scaleFactorX = getWidth() / (bgWidth * 1.f);
         final float scaleFactorY = getHeight() / (bgHeight * 1.f);
@@ -271,11 +275,29 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 l.draw(canvas);
             }
 
-
-            fpsObject.draw(canvas);
+            fpsDraw(canvas);
+            scoreDraw(canvas);
             canvas.restoreToCount(savedState);
         }
     }
+
+
+    private void fpsDraw(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setColor(Color.YELLOW);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(60);
+        canvas.drawText(Integer.toString(fps), GamePanel.bgWidth-90, 60, paint);
+    }
+
+    private void scoreDraw(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(50);
+        canvas.drawText("Score: "+Integer.toString(score), 30, 50, paint);
+    }
+
 
     public void buttonPressed(int n) {
             if(n > screenWidth/2){
@@ -290,7 +312,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void useLaser() {
             if(player.getPlaying()) {
                 long elapsed = (System.nanoTime() - laserStartTime)/1000000;
-                if(elapsed > 300) {
+                if(elapsed > 250) {
                     lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
                             player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
                     laserStartTime = System.nanoTime();

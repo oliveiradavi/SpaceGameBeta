@@ -33,7 +33,6 @@ public class Laser extends GameObject {
     public void update() {
         x+= velocity;
         animation.update();
-        System.out.println("The Y is: " + y);
     }
 
     public void draw(Canvas canvas)

@@ -7,7 +7,7 @@ public class Player extends GameObject {
     private Bitmap[] image;
     private Animation animation = new Animation();
     private int startPosition;
-    private int velocity = 13;
+    private int velocity = 10;
     private boolean keyDown = false;
     private boolean playing = false;
     private boolean fire = false;
