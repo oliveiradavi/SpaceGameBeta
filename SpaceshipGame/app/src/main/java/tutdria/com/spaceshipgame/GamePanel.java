@@ -19,7 +19,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public static int screenWidth;
     public static int screenHeight;
     public int fps;
-    private int x[] = new int [10];
     private MainThread thread;
     private Background background;
     private FPS fpsObject;
@@ -28,8 +27,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList <Laser> lasers;
     private long meteorsStartTime;
     private long laserStartTime;
+    private Random rand = new Random();
+    private int random = 0;
     private boolean threadRunning = false;
-
+    private int x[] = new int [10];
 
     public GamePanel(Context context) {
         super(context);
@@ -44,15 +45,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-        screenWidth = getWidth();
-        screenHeight = getHeight();
-        fpsObject = new FPS();
-        background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
-        player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
-        meteors = new ArrayList<Meteor>();
-        lasers = new ArrayList<Laser>();
-        meteorsStartTime = System.nanoTime();
-        laserStartTime = System.nanoTime();
+            screenWidth = getWidth();
+            screenHeight = getHeight();
+            background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
+            fpsObject = new FPS();
+            player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
+            meteors = new ArrayList<Meteor>();
+            lasers = new ArrayList<Laser>();
+            meteorsStartTime = System.nanoTime();
+            laserStartTime = System.nanoTime();
 
         thread =  new MainThread(getHolder(),this);
         if(!threadRunning) {
@@ -72,13 +73,16 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         boolean retry = true;
 
-        while(retry) {
+        while(retry)
+        {
             try{thread.setRunning(false);
                 thread.join();
             }catch(InterruptedException e){e.printStackTrace();}
             retry = false;
         }
+
     }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -107,64 +111,61 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 player.setFire(false);
                 break;
             }
-
             case MotionEvent.ACTION_POINTER_UP: {
+            // when order of touch and release is the same
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
-                }
-                else{
+                }else{
                     player.setFire(false);
                 }
                 break;
             }
-
             case MotionEvent.ACTION_POINTER_UP + ((1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
+                            // for any order of two pointers
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
-                }
-                else{
+                }else{
                     player.setFire(false);
                 }
                 break;
             }
-
             case MotionEvent.ACTION_POINTER_UP + ((2 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
-                }
-                else{
+                }else{
                     player.setFire(false);
                 }
                 break;
             }
+
         }
         return true;
     }
 
     public void update() {
+
         if(player.getPlaying()){
             background.update();
         }
         fpsObject.setFPS(fps);
         player.update();
         updateMeteors();
+
+        if(player.getFire()) {
+            useLaser();
+        }
+
         updateLasers();
     }
 
     private void updateLasers() {
-
         if(player.getPlaying()) {
-            if(player.getFire()) {
-                useLaser();
-            }
-
             for(int i = 0; i<lasers.size();i++) {
                 lasers.get(i).update();
                 if(lasers.get(i).getX() > screenWidth+lasers.get(i).getWidth()) {
                     lasers.remove(i);
                 }
             }
-
             for(int i=0;i<lasers.size();i++) {
                 for(int j=0;j<meteors.size();j++) {
                     if(collision(lasers.get(i),meteors.get(j))) {
@@ -270,29 +271,31 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 l.draw(canvas);
             }
 
+
             fpsObject.draw(canvas);
             canvas.restoreToCount(savedState);
         }
     }
 
     public void buttonPressed(int n) {
-        if(n > screenWidth/2){
-            player.setFire(true);
-            useLaser();
-            //System.out.println("Button Pressed!");
-        }
-        else {
-            player.setUp(true);
-        }
+            if(n > screenWidth/2){
+                player.setFire(true);
+                useLaser();
+                //System.out.println("Button Pressed!");
+            } else {
+                player.setUp(true);
+            }
     }
 
     private void useLaser() {
-        long elapsed = (System.nanoTime() - laserStartTime)/1000000;
-        if(elapsed > 300) {
-            lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
-                    player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
-            laserStartTime = System.nanoTime();
-        }
+            if(player.getPlaying()) {
+                long elapsed = (System.nanoTime() - laserStartTime)/1000000;
+                if(elapsed > 300) {
+                    lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
+                            player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
+                    laserStartTime = System.nanoTime();
+                }
+            }
     }
 
     public boolean collision(GameObject a, GameObject b) {
