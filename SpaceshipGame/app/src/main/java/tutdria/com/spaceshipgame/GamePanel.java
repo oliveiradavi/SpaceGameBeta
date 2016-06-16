@@ -149,7 +149,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             player.update();
             updateMeteors();
             updateLasers();
-        } else{
+        }
+        else{
             resetGame();
         }
 
@@ -252,7 +253,19 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         player.setPlaying(false);
         player.setFire(false);
         score = 0;
+        updateMeteors();
+        updateLasers();
+        player.update();
     }
+
+    private void pauseGame() {
+        //TODO
+        //It pauses the game, is does not unpause yet
+        player.setPlaying(false);
+        player.setFire(false);
+
+    }
+
 
     @Override
     public void draw(Canvas canvas) {
@@ -281,7 +294,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-
     private void fpsDraw(Canvas canvas) {
         Paint paint = new Paint();
         paint.setColor(Color.YELLOW);
@@ -297,7 +309,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setTextSize(50);
         canvas.drawText("Score: "+Integer.toString(score), 30, 50, paint);
     }
-
 
     public void buttonPressed(int n) {
             if(n > screenWidth/2){
