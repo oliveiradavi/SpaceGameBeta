@@ -3,23 +3,18 @@ package tutdria.com.spaceshipgame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-import java.util.Random;
-
 public class Laser extends GameObject {
 
-    private Random rand = new Random();
-    int r;
     private int velocity = 15;
-    boolean active = false;
     private Animation animation;
     private Bitmap[] image;
 
     public Laser(Bitmap sprite, int x, int y) {
-
+        animation = new Animation();
         this.x = x;
         this.y = y;
 
-        animation = new Animation();
+
         image = new Bitmap[1];
         image[0] = Bitmap.createBitmap(sprite, 0, 0, sprite.getWidth(), sprite.getHeight());
 
@@ -36,12 +31,7 @@ public class Laser extends GameObject {
         System.out.println("The Y is: " + y);
     }
 
-    public void draw(Canvas canvas)
-    {
+    public void draw(Canvas canvas) {
         canvas.drawBitmap(animation.getImage(), x, y, null);
     }
-
-
-
-
 }
