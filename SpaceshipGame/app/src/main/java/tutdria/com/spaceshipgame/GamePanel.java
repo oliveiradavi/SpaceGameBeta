@@ -31,10 +31,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private long laserStartTime;
     private boolean threadRunning = false;
 
-
     public GamePanel(Context context) {
         super(context);
-
         //add the callback to the surfaceholder to intercept events
         getHolder().addCallback(this);
 

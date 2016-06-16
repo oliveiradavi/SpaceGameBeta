@@ -42,8 +42,6 @@ public class MainThread extends Thread {
             nfps = FPScounter.StopAndPost();
             this.gamePanel.fps = nfps;
         }
-
-
     }
     
     public void setRunning(boolean running) {
