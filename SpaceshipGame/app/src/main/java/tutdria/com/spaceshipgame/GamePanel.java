@@ -48,7 +48,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         screenHeight = getHeight();
         background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
         player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
-        fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.fire));
+        fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.firespr));
         meteors = new ArrayList<Meteor>();
         lasers = new ArrayList<Laser>();
         meteorsStartTime = System.nanoTime();

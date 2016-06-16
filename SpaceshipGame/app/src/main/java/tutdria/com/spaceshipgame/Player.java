@@ -17,7 +17,7 @@ public class Player extends GameObject {
         image[0] =  Bitmap.createBitmap(sprite, 0, 0, sprite.getWidth(), sprite.getHeight());
 
         startPosition = GamePanel.bgHeight/2 - sprite.getHeight()/2;
-        x = 100;
+        x = 150;
         y = startPosition;
             height = sprite.getHeight();
             width = sprite.getWidth();
