@@ -22,10 +22,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public int fps;
     public int score;
     private int x[] = new int [10];
+    private int y[] = new int [10];
     private MainThread thread;
     private Background background;
     private Player player;
     private Fire fire;
+    private Joystick joystick;
     private ArrayList<Meteor> meteors;
     private ArrayList <Laser> lasers;
     private long meteorsStartTime;
@@ -48,7 +50,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         screenHeight = getHeight();
         background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
         player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
-        fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.fire));
+        fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.firespr));
+        joystick = new Joystick(BitmapFactory.decodeResource(getResources(),R.drawable.joy2));
         meteors = new ArrayList<Meteor>();
         lasers = new ArrayList<Laser>();
         meteorsStartTime = System.nanoTime();
@@ -92,28 +95,36 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
             case MotionEvent.ACTION_DOWN: {
                 x[index] = (int) event.getX(index);
+                y[index] = (int) event.getY(index);
                 player.setPlaying(true);
-                buttonPressed(x[index]);
+                buttonPressed(index);
                 break;
             }
 
             case MotionEvent.ACTION_POINTER_DOWN: {
                 x[index] = (int)event.getX(index);
+                y[index] = (int) event.getY(index);
                 player.setPlaying(true);
-                buttonPressed(x[index]);
+                buttonPressed(index);
                 break;
             }
 
             case MotionEvent.ACTION_UP: {
                 player.setUp(false);
                 player.setFire(false);
+                player.setDown(false);
+                player.setLeft(false);
+                player.setRight(false);
                 break;
             }
 
             case MotionEvent.ACTION_POINTER_UP: {
             // when order of touch and release is the same
-                if(x[index] < screenWidth/2) {
+                if (x[index] < screenWidth/2) {
                     player.setUp(false);
+                    player.setDown(false);
+                    player.setLeft(false);
+                    player.setRight(false);
                 }else{
                     player.setFire(false);
                 }
@@ -124,6 +135,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                             // for any order of two pointers
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
+                    player.setDown(false);
+                    player.setLeft(false);
+                    player.setRight(false);
                 }else{
                     player.setFire(false);
                 }
@@ -133,6 +147,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             case MotionEvent.ACTION_POINTER_UP + ((2 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
                 if(x[index] < screenWidth/2) {
                     player.setUp(false);
+                    player.setDown(false);
+                    player.setLeft(false);
+                    player.setRight(false);
                 }else{
                     player.setFire(false);
                 }
@@ -147,15 +164,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if(player.getPlaying()){
             background.update();
             player.update();
-            fire.update(player.getY() + player.getHeight()/2);
+            fire.update(player.getX() - fire.getWidth(),player.getY() + player.getHeight()/2);
             updateMeteors();
             updateLasers();
         }
         else{
             resetGame();
         }
-
-
     }
 
     private void updateLasers() {
@@ -240,7 +255,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             for(int i = 0; i <meteors.size(); i++) {
                 if(collision(meteors.get(i),player)) {
                     meteors.remove(i);
-                    resetGame();
+                   // resetGame();
                     break;
                 }
             }
@@ -291,6 +306,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 l.draw(canvas);
             }
 
+            joystick.draw(canvas);
             fpsDraw(canvas);
             scoreDraw(canvas);
             canvas.restoreToCount(savedState);
@@ -310,16 +326,35 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(50);
-        canvas.drawText("Score: "+Integer.toString(score), 30, 50, paint);
+        canvas.drawText("Score: " + Integer.toString(score), 30, 50, paint);
     }
 
     public void buttonPressed(int n) {
-            if(n > screenWidth/2){
+            System.out.println("My x is: "+x[n]);
+        System.out.println("My y is: "+y[n]);
+            if(x[n] > screenWidth/2){
                 player.setFire(true);
                 useLaser();
                 //System.out.println("Button Pressed!");
             } else {
-                player.setUp(true);
+                if(x[n] > 70 && x[n] < 480 && y[n] > 630 && y[n] < 1070) {
+                    System.out.println("Joystick selected");
+                    if(x[n] > 385) {
+                        System.out.println("RIGHT Button");
+                        player.setRight(true);
+                    } else if(x[n] < 175) {
+                        System.out.println("LEFT Button");
+                        player.setLeft(true);
+                    }
+
+                    if(y[n] < 745) {
+                        System.out.println("UP Button");
+                        player.setUp(true);
+                    } else if(y[n] > 965){
+                        player.setDown(true);
+                        System.out.println("DOWN Button");
+                    }
+                }
             }
     }
 

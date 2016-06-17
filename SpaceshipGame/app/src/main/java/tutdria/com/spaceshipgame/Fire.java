@@ -6,17 +6,26 @@ import android.graphics.Canvas;
 public class Fire extends GameObject {
     private Bitmap[] image;
     private Animation animation = new Animation();
+    private int imageWidth;
 
     public Fire(Bitmap sprite) {
-        x = 100 - sprite.getWidth();
+
+        imageWidth = sprite.getWidth()/3;
+        x = 160 - imageWidth;
         y =-250;
-        image = new Bitmap[1];
-        image[0] = Bitmap.createBitmap(sprite, 0, 0, sprite.getWidth(), sprite.getHeight());
+        image = new Bitmap[3];
+        width = sprite.getWidth() / 3;
+
+        for(int i=0;i<image.length;i++) {
+            image[i] = Bitmap.createBitmap(sprite, i*imageWidth, 0, width, sprite.getHeight());
+        }
+
         animation.setFrames(image);
-        animation.setDelay(100);
+        animation.setDelay(250);
     }
 
-    public void update(int y) {
+    public void update(int x, int y) {
+        this.x = x;
         this.y = y - image[0].getHeight()/2;
         animation.update();
     }

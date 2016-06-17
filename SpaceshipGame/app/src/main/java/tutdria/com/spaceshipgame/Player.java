@@ -11,10 +11,17 @@ public class Player extends GameObject {
     private boolean keyDown = false;
     private boolean playing = false;
     private boolean fire = false;
+    private boolean up, down, left, right;
 
     public Player(Bitmap sprite) {
         image = new Bitmap[1];
         image[0] =  Bitmap.createBitmap(sprite, 0, 0, sprite.getWidth(), sprite.getHeight());
+
+
+        up = false;
+        down = false;
+        left = false;
+        right = false;
 
         startPosition = GamePanel.bgHeight/2 - sprite.getHeight()/2;
         x = 100;
@@ -27,7 +34,19 @@ public class Player extends GameObject {
     }
 
     public void setUp(boolean b) {
-        keyDown = b;
+        up = b;
+    }
+
+    public void setDown(boolean b) {
+        down = b;
+    }
+
+    public void setLeft(boolean b) {
+        left = b;
+    }
+
+    public void setRight(boolean b) {
+        right  = b;
     }
 
     public void setPlaying(boolean b) {
@@ -46,15 +65,20 @@ public class Player extends GameObject {
         return fire;
     }
 
-
     public void update() {
 
         if(playing) {
 
-            if(keyDown) {
+            if(up) {
                 y-= velocity;
-            } else {
+            } else if(down){
                 y+= velocity;
+            }
+
+            if(left) {
+                x -= velocity;
+            } else if(right) {
+                x += velocity;
             }
 
             if(y < -200 || y > GamePanel.bgHeight + 200) {
