@@ -267,7 +267,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             for(int i = 0; i <meteors.size(); i++) {
                 if(collision(meteors.get(i),player)) {
                     meteors.remove(i);
-                   // resetGame();
+                    resetGame();
                     break;
                 }
             }
