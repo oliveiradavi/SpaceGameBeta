@@ -95,6 +95,13 @@ public class Player extends GameObject {
 
     public void draw(Canvas canvas)
     {
-        canvas.drawBitmap(animation.getImage(),x,y,null);
+        canvas.drawBitmap(animation.getImage(), x, y, null);
+    }
+
+    public void resetMove() {
+        up = false;
+        down = false;
+        left = false;
+        right = false;
     }
 }
