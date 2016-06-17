@@ -13,9 +13,6 @@ public class Joystick extends GameObject {
         y = GamePanel.bgHeight - sprite.getHeight();
     }
 
-
-
     public void draw(Canvas canvas) {canvas.drawBitmap(image,x,y,null);}
-
 
 }

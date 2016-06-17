@@ -33,7 +33,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private long meteorsStartTime;
     private long laserStartTime;
     private boolean threadRunning = false;
-    boolean still = false;
 
     public GamePanel(Context context) {
         super(context);
@@ -89,7 +88,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-
         int index = event.getActionIndex();
         int action = event.getActionMasked();
 
@@ -99,13 +97,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 x[index] = (int) event.getX(index);
                 y[index] = (int) event.getY(index);
                 player.setPlaying(true);
-                buttonPressed(index);
-                break;
-            }
-
-            case MotionEvent.ACTION_MOVE: {
-                x[index] = (int) event.getX(index);
-                y[index] = (int) event.getY(index);
                 buttonPressed(index);
                 break;
             }
@@ -176,9 +167,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             fire.update(player.getX() - fire.getWidth(),player.getY() + player.getHeight()/2);
             updateMeteors();
             updateLasers();
-            if(still) {
-                player.resetMove();
-            }
         }
         else{
             resetGame();
@@ -285,7 +273,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         updateMeteors();
         updateLasers();
         fire.reset();
-        player.resetMove();
         player.update();
     }
 
@@ -320,7 +307,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             joystick.draw(canvas);
-           // fpsDraw(canvas);
+            fpsDraw(canvas);
             scoreDraw(canvas);
             canvas.restoreToCount(savedState);
         }
@@ -352,28 +339,19 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             } else {
                 if(x[n] > 70 && x[n] < 480 && y[n] > 630 && y[n] < 1070) {
                     System.out.println("Joystick selected");
-                    still = true;
                     if(x[n] > 385) {
                         System.out.println("RIGHT Button");
                         player.setRight(true);
-                        player.setLeft(false);
-                        still = false;
                     } else if(x[n] < 175) {
                         System.out.println("LEFT Button");
                         player.setLeft(true);
-                        player.setRight(false);
-                        still = false;
                     }
 
                     if(y[n] < 745) {
                         System.out.println("UP Button");
                         player.setUp(true);
-                        player.setDown(false);
-                        still = false;
                     } else if(y[n] > 965){
                         player.setDown(true);
-                        player.setUp(false);
-                        still = false;
                         System.out.println("DOWN Button");
                     }
                 }
