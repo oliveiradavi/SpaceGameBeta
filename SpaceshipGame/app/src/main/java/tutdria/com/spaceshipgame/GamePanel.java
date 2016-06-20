@@ -30,10 +30,20 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Joystick joystick;
     private ArrayList<Meteor> meteors;
     private ArrayList <Laser> lasers;
+    private ArrayList <Enemy> enemies;
     private long meteorsStartTime;
     private long laserStartTime;
     private boolean threadRunning = false;
     boolean still = false;
+    private long gameStartTime;
+    private boolean enemiesAlive = false;
+    private boolean created = false;
+    private boolean stopMeteors = false;
+    private int enemiesRemoved = 0;
+    private long timeUntilNext;
+    private int enemySwitch = 0;
+    private int numberOfEnemies;
+    private int pointerIndex = 0;
 
     public GamePanel(Context context) {
         super(context);
@@ -52,12 +62,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
         player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
         fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.firespr));
-        joystick = new Joystick(BitmapFactory.decodeResource(getResources(),R.drawable.joy2));
+        joystick = new Joystick(BitmapFactory.decodeResource(getResources(),R.drawable.joy));
         meteors = new ArrayList<Meteor>();
         lasers = new ArrayList<Laser>();
+        enemies = new ArrayList<Enemy>();
         meteorsStartTime = System.nanoTime();
         laserStartTime = System.nanoTime();
         score = 0;
+        timeUntilNext = 0;
 
         thread =  new MainThread(getHolder(),this);
         if(!threadRunning) {
@@ -89,7 +101,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-
         int index = event.getActionIndex();
         int action = event.getActionMasked();
 
@@ -98,7 +109,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             case MotionEvent.ACTION_DOWN: {
                 x[index] = (int) event.getX(index);
                 y[index] = (int) event.getY(index);
+                if(!player.getPlaying()) {
+                    gameStartTime = System.nanoTime();
+                }
                 player.setPlaying(true);
+
                 buttonPressed(index);
                 break;
             }
@@ -107,12 +122,20 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 x[index] = (int) event.getX(index);
                 y[index] = (int) event.getY(index);
                 buttonPressed(index);
+
+                try {
+                    x[pointerIndex] = (int) event.getX(pointerIndex);
+                    y[pointerIndex] = (int) event.getY(pointerIndex);
+                    buttonPressed(pointerIndex);
+                } catch(Exception e){}
+
                 break;
             }
 
             case MotionEvent.ACTION_POINTER_DOWN: {
                 x[index] = (int)event.getX(index);
                 y[index] = (int) event.getY(index);
+                pointerIndex = index;
                 player.setPlaying(true);
                 buttonPressed(index);
                 break;
@@ -169,20 +192,117 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update() {
-
         if(player.getPlaying()){
+            if(!enemiesAlive) {
+                long timeToCreateEnemies = (System.nanoTime() - gameStartTime)/1000000;
+                if(timeToCreateEnemies > timeUntilNext) {
+                    stopMeteors = true;
+
+                    if(timeToCreateEnemies > timeUntilNext + 1000) {
+                        enemiesAlive = true;
+                    }
+                }
+            }
+
             background.update();
             player.update();
-            fire.update(player.getX() - fire.getWidth(),player.getY() + player.getHeight()/2);
+            fire.update(player.getX() - fire.getWidth(), player.getY() + player.getHeight() / 2);
             updateMeteors();
             updateLasers();
+
+            if(enemiesAlive) {
+                updateEnemies();
+            }
+
             if(still) {
                 player.resetMove();
             }
-        }
-        else{
+        } else{
             resetGame();
         }
+    }
+
+    private void updateEnemies() {
+
+        if(!created) {
+            switch (enemySwitch) {
+                case 0: {
+                    numberOfEnemies = 2;
+                    enemySwitch++;
+                    created = true;
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),100));
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),bgHeight - 125 - 100));
+                    timeUntilNext = 0;
+                    break;
+                }
+
+                case 1: {
+                    numberOfEnemies = 3;
+                    enemySwitch++;
+                    created = true;
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),100));
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),100 + 125 + 75));
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),bgHeight - 125 - 100));;
+                    timeUntilNext = 0;
+                    break;
+                }
+
+                case 2: {
+                    numberOfEnemies = 3;
+                    enemySwitch = 0;
+                    created = true;
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),100));
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),100 + 125 + 75));
+                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),bgHeight - 125 - 100));;
+                    timeUntilNext = 10000;
+                    break;
+                }
+            }
+        }
+
+        if(created) {
+            if(player.getPlaying()) {
+
+                for (int i = 0; i < enemies.size(); i++) {
+
+                    enemies.get(i).update();
+                    if (enemies.get(i).getX() < -enemies.get(i).getWidth() - 50) {
+                        enemies.remove(i);
+                        enemiesRemoved++;
+                    }
+                    else if(collision(enemies.get(i),player)) {
+                        enemies.remove(i);
+                        enemiesRemoved++;
+                        //resetGame();
+                    }
+                }
+
+                for(int i=0;i<enemies.size();i++) {
+                    for(int j=0;j< lasers.size();j++) {
+                        if(collision(lasers.get(j),enemies.get(i))) {
+                            lasers.remove(j);
+                            enemies.remove(i);
+                            enemiesRemoved++;
+                        }
+                    }
+                }
+
+            } else {
+                for (int i = 0; i < enemies.size(); i++) {
+                    enemies.remove(i);
+                    enemiesRemoved++;
+                }
+            }
+        }
+
+        if(enemiesRemoved >= numberOfEnemies) {
+            enemiesRemoved = 0;
+            enemiesAlive = false;
+            created = false;
+            stopMeteors = false;
+            gameStartTime = System.nanoTime();
+        }
+
     }
 
     private void updateLasers() {
@@ -217,65 +337,69 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void updateMeteors() {
-        if(player.getPlaying()) {
-            long elapsed = (System.nanoTime() - meteorsStartTime)/1000000;
-            Random random = new Random();
 
-            int condition = random.nextInt(5)+1;
+            if (player.getPlaying()) {
+                long elapsed = (System.nanoTime() - meteorsStartTime) / 1000000;
+                Random random = new Random();
 
-            if(elapsed > random.nextInt(400)+200){
-                switch (condition) {
-                    case 1:{
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt1),50));
-                        break;
+                int condition = random.nextInt(5) + 1;
+
+                if(!stopMeteors) {
+                    if (elapsed > random.nextInt(400) + 200) {
+                        switch (condition) {
+                            case 1: {
+                                meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(), R.drawable.mt1), 50));
+                                break;
+                            }
+                            case 2: {
+                                meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(), R.drawable.mt2), 60));
+                                break;
+                            }
+                            case 3: {
+                                meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(), R.drawable.mt3), 70));
+                                break;
+                            }
+                            case 4: {
+                                meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(), R.drawable.mt4), 80));
+                                break;
+                            }
+                            case 5: {
+                                meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(), R.drawable.mt5), 90));
+                                break;
+                            }
+                            case 6: {
+                                meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(), R.drawable.mt6), 100));
+                                break;
+                            }
+                            default: {
+                                meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(), R.drawable.mt1), 50));
+                                break;
+                            }
+                        }
+                        meteorsStartTime = System.nanoTime();
                     }
-                    case 2: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt2),60));
-                        break;
+                }
+
+                for (int i = 0; i < meteors.size(); i++) {
+                    meteors.get(i).update();
+                    if (meteors.get(i).getX() < -meteors.get(i).getWidth()) {
+                        meteors.remove(i);
                     }
-                    case 3: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt3),70));
-                        break;
-                    }
-                    case 4: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt4),80));
-                        break;
-                    }
-                    case 5: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt5),90));
-                        break;
-                    }
-                    case 6: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt6),100));
-                        break;
-                    }
-                    default: {
-                        meteors.add(new Meteor(BitmapFactory.decodeResource(getResources(),R.drawable.mt1),50));
+                }
+
+                for (int i = 0; i < meteors.size(); i++) {
+                    if (collision(meteors.get(i), player)) {
+                        meteors.remove(i);
+                        //resetGame();
                         break;
                     }
                 }
-                meteorsStartTime = System.nanoTime();
-            }
-
-            for(int i = 0; i<meteors.size();i++) {
-                meteors.get(i).update();
-                if(meteors.get(i).getX()<-meteors.get(i).getWidth()) {
+            } else {
+                for (int i = 0; i < meteors.size(); i++) {
                     meteors.remove(i);
                 }
             }
 
-            for(int i = 0; i <meteors.size(); i++) {
-                if(collision(meteors.get(i),player)) {
-                    meteors.remove(i);
-                    resetGame();
-                    break;
-                }
-            }
-        } else {
-            for(int i=0; i<meteors.size();i++) {
-                meteors.remove(i);
-            }
-        }
     }
 
     private void resetGame() {
@@ -311,6 +435,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             player.draw(canvas);
             fire.draw(canvas);
 
+            for(Enemy e: enemies) {
+                e.draw(canvas);
+            }
+
             for(Meteor m: meteors) {
                 m.draw(canvas);
             }
@@ -320,7 +448,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             joystick.draw(canvas);
-           // fpsDraw(canvas);
+            fpsDraw(canvas);
             scoreDraw(canvas);
             canvas.restoreToCount(savedState);
         }
@@ -343,34 +471,34 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void buttonPressed(int n) {
-            System.out.println("My x is: "+x[n]);
+        System.out.println("My x is: "+x[n]);
         System.out.println("My y is: "+y[n]);
             if(x[n] > screenWidth/2){
                 player.setFire(true);
                 useLaser();
-                //System.out.println("Button Pressed!");
+                System.out.println("Button Pressed!");
             } else {
                 if(x[n] > 70 && x[n] < 480 && y[n] > 630 && y[n] < 1070) {
                     System.out.println("Joystick selected");
                     still = true;
-                    if(x[n] > 385) {
+                    if(x[n] > 335) {
                         System.out.println("RIGHT Button");
                         player.setRight(true);
                         player.setLeft(false);
                         still = false;
-                    } else if(x[n] < 175) {
+                    } else if(x[n] < 220) {
                         System.out.println("LEFT Button");
                         player.setLeft(true);
                         player.setRight(false);
                         still = false;
                     }
 
-                    if(y[n] < 745) {
+                    if(y[n] < 790) {
                         System.out.println("UP Button");
                         player.setUp(true);
                         player.setDown(false);
                         still = false;
-                    } else if(y[n] > 965){
+                    } else if(y[n] > 910){
                         player.setDown(true);
                         player.setUp(false);
                         still = false;
@@ -383,7 +511,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void useLaser() {
             if(player.getPlaying()) {
                 long elapsed = (System.nanoTime() - laserStartTime)/1000000;
-                if(elapsed > 250) {
+                if(elapsed > 350){
                     lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
                             player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
                     laserStartTime = System.nanoTime();

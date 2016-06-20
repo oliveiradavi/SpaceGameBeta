@@ -9,7 +9,7 @@ public class Laser extends GameObject {
 
     private Random rand = new Random();
     int r;
-    private int velocity = 15;
+    private int velocity = 25;
     boolean active = false;
     private Animation animation;
     private Bitmap[] image;
@@ -35,12 +35,7 @@ public class Laser extends GameObject {
         animation.update();
     }
 
-    public void draw(Canvas canvas)
-    {
+    public void draw(Canvas canvas) {
         canvas.drawBitmap(animation.getImage(), x, y, null);
     }
-
-
-
-
 }
