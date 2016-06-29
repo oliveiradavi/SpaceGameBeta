@@ -8,8 +8,8 @@ android {
         applicationId "tutdria.com.spaceshipgame"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 3
-        versionName "2.1"
+        versionCode 6
+        versionName "6"
     }
     buildTypes {
         release {

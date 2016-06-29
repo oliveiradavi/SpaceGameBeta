@@ -13,7 +13,7 @@ public class Background {
         image = res;
     }
     public void update(){
-        x -= 7;
+        x -= 3;
         if(x<-GamePanel.bgWidth) {
             x=0;
         }

@@ -44,6 +44,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int enemySwitch = 0;
     private int numberOfEnemies;
     private int pointerIndex = 0;
+    private static float scaleFactorX;
+    private static float scaleFactorY;
 
     public GamePanel(Context context) {
         super(context);
@@ -57,9 +59,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
 
-        screenWidth = getWidth();
-        screenHeight = getHeight();
-        background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.space));
+        screenWidth = bgWidth;
+        screenHeight = bgHeight;
+        scaleFactorX = getWidth() / (bgWidth * 1.f);
+        scaleFactorY = getHeight() / (bgHeight * 1.f);
+        background = new Background(BitmapFactory.decodeResource(getResources(),R.drawable.blue));
         player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
         fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.firespr));
         joystick = new Joystick(BitmapFactory.decodeResource(getResources(),R.drawable.joy));
@@ -153,31 +157,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             case MotionEvent.ACTION_POINTER_UP: {
             // when order of touch and release is the same
                 if (x[index] < screenWidth/2) {
-                    player.setUp(false);
-                    player.setDown(false);
-                    player.setLeft(false);
-                    player.setRight(false);
-                }else{
-                    player.setFire(false);
-                }
-                break;
-            }
-
-            case MotionEvent.ACTION_POINTER_UP + ((1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
-                            // for any order of two pointers
-                if(x[index] < screenWidth/2) {
-                    player.setUp(false);
-                    player.setDown(false);
-                    player.setLeft(false);
-                    player.setRight(false);
-                }else{
-                    player.setFire(false);
-                }
-                break;
-            }
-
-            case MotionEvent.ACTION_POINTER_UP + ((2 << MotionEvent.ACTION_POINTER_INDEX_SHIFT)): {
-                if(x[index] < screenWidth/2) {
                     player.setUp(false);
                     player.setDown(false);
                     player.setLeft(false);
@@ -282,6 +261,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                         if(collision(lasers.get(j),enemies.get(i))) {
                             lasers.remove(j);
                             enemies.remove(i);
+                            score += 100;
                             enemiesRemoved++;
                         }
                     }
@@ -302,7 +282,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             stopMeteors = false;
             gameStartTime = System.nanoTime();
         }
-
     }
 
     private void updateLasers() {
@@ -425,9 +404,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
 
-        final float scaleFactorX = getWidth() / (bgWidth * 1.f);
-        final float scaleFactorY = getHeight() / (bgHeight * 1.f);
-
         if (canvas != null) {
             final int savedState = canvas.save();
             canvas.scale(scaleFactorX, scaleFactorY);
@@ -473,36 +449,42 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public void buttonPressed(int n) {
         System.out.println("My x is: "+x[n]);
         System.out.println("My y is: "+y[n]);
-            if(x[n] > screenWidth/2){
+
+        int scaledX = (int) (joystick.getX()*scaleFactorX);
+        int scaledY = (int) (joystick.getY()*scaleFactorY);
+        int scaledWidth = (int)(joystick.getWidth()*scaleFactorX);
+        int scaledHeight = (int) (joystick.getHeight()*scaleFactorY);
+
+            if(x[n] > screenWidth*scaleFactorX/2){
                 player.setFire(true);
                 useLaser();
-                System.out.println("Button Pressed!");
+              //  System.out.println("Button Pressed!");
             } else {
-                if(x[n] > 70 && x[n] < 480 && y[n] > 630 && y[n] < 1070) {
-                    System.out.println("Joystick selected");
+                if(x[n] > scaledX && x[n] < scaledX+scaledWidth && y[n] > scaledY && y[n] < scaledY+scaledHeight) {
+                 //   System.out.println("Joystick selected");
                     still = true;
-                    if(x[n] > 335) {
-                        System.out.println("RIGHT Button");
+                    if(x[n] > scaledX + (scaledWidth/1.5)) {
+                      //  System.out.println("RIGHT Button");
                         player.setRight(true);
                         player.setLeft(false);
                         still = false;
-                    } else if(x[n] < 220) {
-                        System.out.println("LEFT Button");
+                    } else if(x[n] < scaledX + (scaledWidth/3)) {
+                     //   System.out.println("LEFT Button");
                         player.setLeft(true);
                         player.setRight(false);
                         still = false;
                     }
 
-                    if(y[n] < 790) {
-                        System.out.println("UP Button");
+                    if(y[n] < scaledY + (scaledHeight/3)) {
+                      //  System.out.println("UP Button");
                         player.setUp(true);
                         player.setDown(false);
                         still = false;
-                    } else if(y[n] > 910){
+                    } else if(y[n] > scaledY + (scaledHeight/1.5)){
                         player.setDown(true);
                         player.setUp(false);
                         still = false;
-                        System.out.println("DOWN Button");
+                     //   System.out.println("DOWN Button");
                     }
                 }
             }

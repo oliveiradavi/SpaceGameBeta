@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 
 public class Enemy extends GameObject {
     Bitmap image;
+    private int velocity = 10;
 
     public Enemy(Bitmap sprite, int y) {
         image = sprite;
@@ -12,12 +13,12 @@ public class Enemy extends GameObject {
         width = sprite.getWidth();
         height = sprite.getHeight();
 
-        x = GamePanel.screenWidth;
+        x = GamePanel.bgWidth;
         this.y = y;
     }
 
     public void update() {
-        x-= 10;
+        x-= velocity;
     }
 
     public void draw(Canvas canvas) {
