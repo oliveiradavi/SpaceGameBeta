@@ -16,7 +16,7 @@ public class Item extends GameObject {
     public void update() {
 
         if(x > 0) {
-            x -= 12;
+            x -= 6;
         } else{
             x = -50;
         }

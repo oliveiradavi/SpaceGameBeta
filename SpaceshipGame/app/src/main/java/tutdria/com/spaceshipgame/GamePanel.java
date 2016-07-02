@@ -48,6 +48,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private int pointerIndex = 0;
     private static float scaleFactorX;
     private static float scaleFactorY;
+    int laserType;
 
     public GamePanel(Context context) {
         super(context);
@@ -74,6 +75,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         enemies = new ArrayList<Enemy>();
         item = new Item(BitmapFactory.decodeResource(getResources(),R.drawable.powerup1));
         explosions = new ArrayList<Explosion>();
+        laserType = 0;
         meteorsStartTime = System.nanoTime();
         laserStartTime = System.nanoTime();
         score = 0;
@@ -204,6 +206,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
             if(collision(player,item)) {
                 item.setX(-50);
+                laserType = 1;
             }
 
             if(enemiesAlive) {
@@ -293,7 +296,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                                 item.setX(enemyX);
                                 item.setY(enemyY);
                             }
-                            explosions.add(new Explosion(BitmapFactory.decodeResource(getResources(), R.drawable.explosion2), enemyX - enemies.get(i).getWidth()/3, enemyY - enemies.get(i).getHeight()/3));
+                            explosions.add(new Explosion(BitmapFactory.decodeResource(getResources(), R.drawable.explosion2), enemyX - enemies.get(i).getWidth()/2, enemyY - enemies.get(i).getHeight()/3));
 
                             lasers.remove(j);
                             enemies.remove(i);
@@ -462,7 +465,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
 
             joystick.draw(canvas);
-            fpsDraw(canvas);
+           // fpsDraw(canvas);
             scoreDraw(canvas);
             canvas.restoreToCount(savedState);
         }
@@ -531,11 +534,24 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private void useLaser() {
             if(player.getPlaying()) {
                 long elapsed = (System.nanoTime() - laserStartTime)/1000000;
-                if(elapsed > 350){
-                    lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
-                            player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
-                    laserStartTime = System.nanoTime();
+
+                if(laserType == 0) {
+                    if(elapsed > 400){
+                        lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
+                                player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
+                        laserStartTime = System.nanoTime();
+                    }
+                } else {
+                    if(elapsed > 300){
+                        int halfOfTheHeightOfTheLaserSprite = 23;
+                        lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser2),
+                                player.getX()+player.getWidth(),player.getY()+player.getHeight()/2 - halfOfTheHeightOfTheLaserSprite));
+                        laserStartTime = System.nanoTime();
+                    }
                 }
+
+
+
             }
     }
 
