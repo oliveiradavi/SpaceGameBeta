@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 
 public class Enemy extends GameObject {
     Bitmap image;
-    private int velocity = 12;
+    private int velocity = 8;
     private boolean item = false;
 
     public Enemy(Bitmap sprite, int y) {

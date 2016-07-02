@@ -31,6 +31,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList<Meteor> meteors;
     private ArrayList <Laser> lasers;
     private ArrayList <Enemy> enemies;
+    private ArrayList <Explosion> explosions;
     private Item item;
     private long meteorsStartTime;
     private long laserStartTime;
@@ -72,6 +73,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         lasers = new ArrayList<Laser>();
         enemies = new ArrayList<Enemy>();
         item = new Item(BitmapFactory.decodeResource(getResources(),R.drawable.powerup1));
+        explosions = new ArrayList<Explosion>();
         meteorsStartTime = System.nanoTime();
         laserStartTime = System.nanoTime();
         score = 0;
@@ -192,6 +194,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             updateLasers();
             item.update();
 
+            for(int i=0;i<explosions.size();i++) {
+                if(explosions.get(i).getPlayed()) {
+                    explosions.remove(i);
+                } else {
+                    explosions.get(i).update();
+                }
+            }
+
             if(collision(player,item)) {
                 item.setX(-50);
             }
@@ -276,12 +286,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 for(int i=0;i<enemies.size();i++) {
                     for(int j=0;j< lasers.size();j++) {
                         if(collision(lasers.get(j),enemies.get(i))) {
+                            int enemyX = enemies.get(i).getX();
+                            int enemyY = enemies.get(i).getY();
+
                             if(enemies.get(i).getItem()) {
-                                item.setX(enemies.get(i).getX());
-                                item.setY(enemies.get(i).getY());
+                                item.setX(enemyX);
+                                item.setY(enemyY);
                             }
+                            explosions.add(new Explosion(BitmapFactory.decodeResource(getResources(), R.drawable.explosion2), enemyX - enemies.get(i).getWidth()/3, enemyY - enemies.get(i).getHeight()/3));
+
                             lasers.remove(j);
                             enemies.remove(i);
+
                             score += 100;
                             enemiesRemoved++;
                         }
@@ -439,6 +455,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
             for(Laser l: lasers) {
                 l.draw(canvas);
+            }
+
+            for(Explosion e: explosions) {
+                e.draw(canvas);
             }
 
             joystick.draw(canvas);

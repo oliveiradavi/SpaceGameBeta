@@ -7,8 +7,8 @@ public class Player extends GameObject {
     private Bitmap image;
     private int startPositionX;
     private int startPositionY;
-    private int velocityX = 14;
-    private int velocityY = 11;
+    private int velocityX = 12;
+    private int velocityY = 10;
     private boolean playing = false;
     private boolean fire = false;
     private boolean up, down, left, right;
