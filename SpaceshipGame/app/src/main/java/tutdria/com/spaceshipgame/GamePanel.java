@@ -41,6 +41,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private boolean enemiesAlive = false;
     private boolean created = false;
     private boolean stopMeteors = false;
+    private boolean continueGame = true;
     private int enemiesRemoved = 0;
     private long timeUntilNext;
     private int enemySwitch = 0;
@@ -49,6 +50,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private static float scaleFactorX;
     private static float scaleFactorY;
     int laserType;
+    int lives;
 
     public GamePanel(Context context) {
         super(context);
@@ -80,6 +82,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         laserStartTime = System.nanoTime();
         score = 0;
         timeUntilNext = 0;
+        lives = 3;
 
         thread =  new MainThread(getHolder(),this);
         if(!threadRunning) {
@@ -122,7 +125,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 if(!player.getPlaying()) {
                     gameStartTime = System.nanoTime();
                 }
-                player.setPlaying(true);
+                if(!player.getPlaying()) {
+                    player.setPlaying(true);
+                    lives = 3;
+                    continueGame = true;
+                    gameStartTime = System.nanoTime();
+                }
+
 
                 buttonPressed(index);
                 break;
@@ -146,7 +155,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 x[index] = (int)event.getX(index);
                 y[index] = (int) event.getY(index);
                 pointerIndex = index;
-                player.setPlaying(true);
+                if(!player.getPlaying()) {
+                    player.setPlaying(true);
+                    lives = 3;
+                    continueGame = true;
+                    gameStartTime = System.nanoTime();
+                }
                 buttonPressed(index);
                 break;
             }
@@ -217,110 +231,124 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 player.resetMove();
             }
         } else{
-            resetGame();
+           // resetGame();
         }
     }
 
     private void updateEnemies() {
 
-        if(!created) {
-            int totalY = bgHeight;
-            switch (enemySwitch) {
-                case 0: {
-                    numberOfEnemies = 4;
-                    enemySwitch++;
-                    created = true;
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*2)));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*4)));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*5)));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*3)));
-                    timeUntilNext = 0;
-                    break;
-                }
 
-                case 1: {
-                    numberOfEnemies = 3;
-                    enemySwitch++;
-                    created = true;
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5)));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy2),totalY/2 - (int)(30.5*scaleFactorY/1.5),true));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5)));
-                    timeUntilNext = 0;
-                    break;
-                }
+        if(player.getPlaying()) {
+            if(!created) {
+                int totalY = bgHeight;
+                switch (enemySwitch) {
+                    case 0: {
+                        numberOfEnemies = 4;
+                        enemySwitch++;
+                        created = true;
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*2)));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*4)));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*5)));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*3)));
+                        timeUntilNext = 0;
+                        break;
+                    }
 
-                case 2: {
-                    numberOfEnemies = 8;
-                    enemySwitch = 0;
-                    created = true;
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*0));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*1));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*2));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*3));
+                    case 1: {
+                        numberOfEnemies = 3;
+                        enemySwitch++;
+                        created = true;
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5)));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy2),totalY/2 - (int)(30.5*scaleFactorY/1.5),true));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5)));
+                        timeUntilNext = 0;
+                        break;
+                    }
 
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*0));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*1));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*2));
-                    enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*3));
+                    case 2: {
+                        numberOfEnemies = 8;
+                        enemySwitch = 0;
+                        created = true;
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*0));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*1));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*2));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*3));
 
-                    timeUntilNext = 10000;
-                    break;
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*0));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*1));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*2));
+                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*3));
+
+                        timeUntilNext = 10000;
+                        break;
+                    }
                 }
             }
-        }
 
-        if(created) {
-            if(player.getPlaying()) {
+            if(created) {
+                if(player.getPlaying()) {
 
-                for (int i = 0; i < enemies.size(); i++) {
+                    for (int i = 0; i < enemies.size(); i++) {
 
-                    enemies.get(i).update();
-                    if (enemies.get(i).getX() < -enemies.get(i).getWidth() - 50) {
-                        enemies.remove(i);
-                        enemiesRemoved++;
-                    }
-                    else if(collision(enemies.get(i),player)) {
-                        enemies.remove(i);
-                        enemiesRemoved++;
-                        //resetGame();
-                    }
-                }
-
-                for(int i=0;i<enemies.size();i++) {
-                    for(int j=0;j< lasers.size();j++) {
-                        if(collision(lasers.get(j),enemies.get(i))) {
-                            int enemyX = enemies.get(i).getX();
-                            int enemyY = enemies.get(i).getY();
-
-                            if(enemies.get(i).getItem()) {
-                                item.setX(enemyX);
-                                item.setY(enemyY);
-                            }
-                            explosions.add(new Explosion(BitmapFactory.decodeResource(getResources(), R.drawable.explosion2), enemyX - enemies.get(i).getWidth()/2, enemyY - enemies.get(i).getHeight()/3));
-
-                            lasers.remove(j);
+                        enemies.get(i).update();
+                        if (enemies.get(i).getX() < -enemies.get(i).getWidth() - 50) {
                             enemies.remove(i);
-
-                            score += 100;
                             enemiesRemoved++;
                         }
+                        else if(collision(enemies.get(i),player)) {
+                            enemies.remove(i);
+                            enemiesRemoved++;
+                            resetGame();
+                        }
+                    }
+
+                    for(int i=0;i<enemies.size();i++) {
+                        for(int j=0;j< lasers.size();j++) {
+                            if(collision(lasers.get(j),enemies.get(i))) {
+                                int enemyX = enemies.get(i).getX();
+                                int enemyY = enemies.get(i).getY();
+
+                                if(enemies.get(i).getItem()) {
+                                    item.setX(enemyX);
+                                    item.setY(enemyY);
+                                }
+                                explosions.add(new Explosion(BitmapFactory.decodeResource(getResources(), R.drawable.explosion2), enemyX - enemies.get(i).getWidth()/2, enemyY - enemies.get(i).getHeight()/3));
+
+                                lasers.remove(j);
+                                enemies.remove(i);
+
+                                score += 100;
+                                enemiesRemoved++;
+                            }
+                        }
+                    }
+
+                } else {
+                    for (int i = 0; i < enemies.size(); i++) {
+                        enemies.remove(i);
+                        enemiesRemoved++;
                     }
                 }
-
-            } else {
-                for (int i = 0; i < enemies.size(); i++) {
-                    enemies.remove(i);
-                    enemiesRemoved++;
-                }
             }
-        }
 
-        if(enemiesRemoved >= numberOfEnemies) {
-            enemiesRemoved = 0;
+            if(enemiesRemoved >= numberOfEnemies) {
+                enemiesRemoved = 0;
+                enemiesAlive = false;
+                created = false;
+                stopMeteors = false;
+                gameStartTime = System.nanoTime();
+            }
+        }else {
+
+            for(int i=0;i<enemies.size();i++){
+                enemies.remove(i);
+            }
+
+            enemySwitch = 0;
             enemiesAlive = false;
-            created = false;
-            stopMeteors = false;
-            gameStartTime = System.nanoTime();
+            enemiesRemoved = 0;
+            numberOfEnemies = 0;
+            stopMeteors = true;
         }
     }
 
@@ -409,7 +437,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 for (int i = 0; i < meteors.size(); i++) {
                     if (collision(meteors.get(i), player)) {
                         meteors.remove(i);
-                        //resetGame();
+                        resetGame();
                         break;
                     }
                 }
@@ -422,14 +450,33 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void resetGame() {
-        player.setPlaying(false);
-        player.setFire(false);
-        score = 0;
-        updateMeteors();
-        updateLasers();
-        fire.reset();
-        player.resetMove();
-        player.update();
+
+        if(player.getPlaying()) {
+            lives--;
+        }
+
+        if(lives < 1) {
+            player.setPlaying(false);
+            continueGame = false;
+            player.setFire(false);
+            player.resetMove();
+            player.update();
+            score = 0;
+            laserType = 0;
+            updateMeteors();
+            updateLasers();
+            updateEnemies();
+            fire.reset();
+            laserType = 0;
+            meteorsStartTime = System.nanoTime();
+            laserStartTime = System.nanoTime();
+            timeUntilNext = 0;
+        } else{
+            player.resetPosition();
+            player.resetMove();
+            laserType = 0;
+            player.setFire(false);
+        }
     }
 
     private void pauseGame() {
@@ -467,6 +514,12 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             joystick.draw(canvas);
            // fpsDraw(canvas);
             scoreDraw(canvas);
+            livesDraw(canvas);
+
+            if(!continueGame) {
+                drawContinue(canvas);
+            }
+
             canvas.restoreToCount(savedState);
         }
     }
@@ -476,7 +529,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setColor(Color.YELLOW);
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(60);
-        canvas.drawText(Integer.toString(fps), GamePanel.bgWidth-90, 60, paint);
+        canvas.drawText(Integer.toString(fps), GamePanel.bgWidth - 90, 60, paint);
     }
 
     private void scoreDraw(Canvas canvas) {
@@ -485,6 +538,24 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(50);
         canvas.drawText("Score: " + Integer.toString(score), 30, 50, paint);
+    }
+
+    private void livesDraw(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(50);
+        canvas.drawText("Lives: " + Integer.toString(lives), 30, 150, paint);
+    }
+
+    private void drawContinue(Canvas canvas) {
+        //TODO
+        //Change for an actual Continue screen
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(50);
+        canvas.drawText("Continue?", bgWidth*scaleFactorX/2, bgHeight*scaleFactorY/2, paint);
     }
 
     public void buttonPressed(int n) {

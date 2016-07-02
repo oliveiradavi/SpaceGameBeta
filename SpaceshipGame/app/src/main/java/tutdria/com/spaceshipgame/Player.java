@@ -105,4 +105,9 @@ public class Player extends GameObject {
         left = false;
         right = false;
     }
+
+    public void resetPosition() {
+        this.x = startPositionX;
+        this.y = startPositionY;
+    }
 }
