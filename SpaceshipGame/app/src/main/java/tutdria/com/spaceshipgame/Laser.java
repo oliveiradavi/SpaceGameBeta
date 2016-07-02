@@ -3,14 +3,9 @@ package tutdria.com.spaceshipgame;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-import java.util.Random;
-
 public class Laser extends GameObject {
 
-    private Random rand = new Random();
-    int r;
     private int velocity = 25;
-    boolean active = false;
     private Animation animation;
     private Bitmap[] image;
 

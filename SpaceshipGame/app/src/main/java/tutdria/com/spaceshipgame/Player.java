@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 
 public class Player extends GameObject {
     private Bitmap image;
+    private Bitmap savedImage;
     private int startPositionX;
     private int startPositionY;
     private int velocityX = 12;
@@ -16,6 +17,7 @@ public class Player extends GameObject {
     public Player(Bitmap sprite) {
 
         image =  Bitmap.createBitmap(sprite, 0, 0, sprite.getWidth(), sprite.getHeight());
+        savedImage = image;
 
         up = false;
         down = false;
@@ -104,6 +106,14 @@ public class Player extends GameObject {
         down = false;
         left = false;
         right = false;
+    }
+
+    public void setImage(Bitmap sprite) {
+        image = Bitmap.createBitmap(sprite, 0, 0, sprite.getWidth(), sprite.getHeight());
+    }
+
+    public void resetImage() {
+        image = savedImage;
     }
 
     public void resetPosition() {

@@ -27,6 +27,7 @@ public class Explosion extends GameObject {
 
     public void update() {
         animation.update();
+        x-=6;
     }
 
     public boolean getPlayed() {
