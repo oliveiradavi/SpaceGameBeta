@@ -22,14 +22,11 @@ public class Explosion extends GameObject {
         }
 
         animation.setFrames(image);
-        animation.setDelay(100);
+        animation.setDelay(50);
     }
 
     public void update() {
-
-        if(!animation.playedOnce()){
-            animation.update();
-        }
+        animation.update();
     }
 
     public boolean getPlayed() {
@@ -41,6 +38,8 @@ public class Explosion extends GameObject {
 
     public void draw(Canvas canvas)
     {
-        canvas.drawBitmap(animation.getImage(), x, y, null);
+        if(!animation.playedOnce()){
+            canvas.drawBitmap(animation.getImage(), x, y, null);
+        }
     }
 }

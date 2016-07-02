@@ -28,10 +28,11 @@ public class Animation {
             startTime = System.nanoTime();
         }
         if(currentFrame == frames.length){
-            currentFrame = 0;
             playedOnce = true;
+            currentFrame = 0;
         }
     }
+
     public Bitmap getImage(){
         return frames[currentFrame];
     }
