@@ -5,14 +5,22 @@ import android.graphics.Canvas;
 
 public class Enemy extends GameObject {
     Bitmap image;
-    private int velocity = 8;
+    private int velocityX = 15;
+    private int velocityY = 4;
+    private final boolean up = true;
+    private final boolean down = false;
     private boolean item = false;
     private boolean fire = false;
     private long createdTime;
+    private boolean move;
+    private int xDistance = 0;
+    private long startTime;
+    private long elapsedTime;
+    private boolean timeToDie = false;
 
     public Enemy(Bitmap sprite, int y) {
 
-        createdTime = System.nanoTime()/1000000 + 500;
+        createdTime = System.nanoTime()/1000000 + 1000;
         image = sprite;
 
         width = sprite.getWidth();
@@ -20,6 +28,14 @@ public class Enemy extends GameObject {
 
         x = GamePanel.bgWidth;
         this.y = y;
+
+        if(y>GamePanel.bgHeight/2) {
+            move = up;
+        } else{
+            move = down;
+        }
+
+        startTime = System.nanoTime();
     }
 
     public Enemy(Bitmap sprite, int y, boolean b) {
@@ -33,7 +49,15 @@ public class Enemy extends GameObject {
         x = GamePanel.bgWidth;
         this.y = y;
 
+        if(y>GamePanel.bgHeight/2) {
+            move = up;
+        } else{
+            move = down;
+        }
+
         item = b;
+
+        startTime = System.nanoTime();
     }
 
     public Enemy(Bitmap sprite, int y, int x) {
@@ -46,6 +70,16 @@ public class Enemy extends GameObject {
 
         this.x = x;
         this.y = y;
+
+        xDistance = x - GamePanel.bgWidth;
+
+        if(y>GamePanel.bgHeight/2) {
+            move = up;
+        } else{
+            move = down;
+        }
+
+        startTime = System.nanoTime();
     }
 
     public void setFire(boolean b) {
@@ -69,7 +103,34 @@ public class Enemy extends GameObject {
     }
 
     public void update() {
-        x-= velocity;
+
+        elapsedTime = System.nanoTime()/1000000 - startTime/1000000;
+        if(elapsedTime > 1500) {
+            fire = true;
+            startTime = System.nanoTime();
+        }
+
+        if(GamePanel.bgWidth - xDistance > GamePanel.bgWidth-GamePanel.bgWidth/3) {
+            x-= velocityX;
+            xDistance += velocityX;
+        }
+        else{
+            if(move == up) {
+                y-=velocityY;
+            } else{
+                y+=velocityY;
+            }
+
+            if(!timeToDie) {
+                if(y<0) {
+                    move = down;
+                    timeToDie = true;
+                } else if(y>GamePanel.bgHeight) {
+                    move = up;
+                    timeToDie = true;
+                }
+            }
+        }
     }
 
     public void draw(Canvas canvas) {

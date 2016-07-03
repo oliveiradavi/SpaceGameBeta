@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 
 public class Laser extends GameObject {
 
-    private int velocity = 25;
+    private int velocity = 35;
     private Animation animation;
     private Bitmap[] image;
 

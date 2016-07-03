@@ -1,11 +1,13 @@
 package tutdria.com.spaceshipgame;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -100,7 +102,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         laserStartTime = System.nanoTime();
         score = 0;
         timeUntilNext = 0;
-        lives = 3;
+        lives = 5;
         laserType = 0;
         enemiesRemoved = 0;
         enemySwitch = 0;
@@ -147,7 +149,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
                 if(!player.getPlaying()) {
                     player.setPlaying(true);
-                    lives = 3;
+                    lives = 5;
                     continueGame = true;
                     gameStartTime = System.nanoTime();
                 }
@@ -313,14 +315,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 if(player.getPlaying()) {
 
                     for (int i = 0; i < enemies.size(); i++) {
-
                         enemies.get(i).update();
-                        if (enemies.get(i).getX() < -enemies.get(i).getWidth() - 50) {
+                        if (enemies.get(i).getY() < -50 ||  enemies.get(i).getY() > bgHeight + 50) {
                             enemies.remove(i);
                             enemiesRemoved++;
-                        }
-                        else if(collision(enemies.get(i),player)) {
+                        } else if(collision(enemies.get(i),player)) {
                             if(!invencibility) {
+                                int enemyX = enemies.get(i).getX();
+                                int enemyY = enemies.get(i).getY();
+                                explosions.add(new Explosion(BitmapFactory.decodeResource(getResources(), R.drawable.explosion2), enemyX - enemies.get(i).getWidth() / 2, enemyY - enemies.get(i).getHeight()/3));
                                 enemies.remove(i);
                                 enemiesRemoved++;
                                 resetGame();
@@ -412,16 +415,15 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
     private void updateEnemyLasers() {
 
+        Bitmap image = BitmapFactory.decodeResource(getResources(),R.drawable.laserenemy);
         for(int i=0;i<enemies.size();i++) {
-            long elapsedTime = (System.nanoTime()/1000000) - enemies.get(i).getTime();
-            if(elapsedTime>1000) {
-                enemyLasers.add(new EnemyLaser(BitmapFactory.decodeResource(getResources(), R.drawable.enemylaser), enemies.get(i).getX() - enemies.get(i).getWidth()/2, enemies.get(i).getY() + enemies.get(i).getHeight()/2));
-                enemies.get(i).resetTime();
+            if(enemies.get(i).getFire()) {
+                enemyLasers.add(new EnemyLaser(image, enemies.get(i).getX() - enemies.get(i).getWidth()/2, enemies.get(i).getY() + enemies.get(i).getHeight()/2 - image.getHeight()/2));
+                enemies.get(i).setFire(false);
             }
         }
 
         for(int i=0;i<enemyLasers.size();i++) {
-
             enemyLasers.get(i).update();
 
             if(collision(enemyLasers.get(i),player)) {
@@ -535,7 +537,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             player.resetPosition();
             player.resetMove();
             laserType = 0;
-            player.setFire(false);
             invencibility = true;
             player.setImage(BitmapFactory.decodeResource(getResources(),R.drawable.playerinvencible));
             invencibilityTime = System.nanoTime()/1000000;
@@ -600,23 +601,32 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setColor(Color.YELLOW);
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(60);
-        canvas.drawText(Integer.toString(fps), GamePanel.bgWidth - 90, 60, paint);
+     //   canvas.drawText(Integer.toString(fps), GamePanel.bgWidth - 90, GamePanel.bgHeight - 60, paint);
     }
 
     private void scoreDraw(Canvas canvas) {
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.FILL);
-        paint.setTextSize(50);
-        canvas.drawText("Score: " + Integer.toString(score), 30, 50, paint);
+        paint.setTextSize(40);
+        paint.setTypeface(Typeface.create("Helvetica", Typeface.NORMAL));
+
+
+        String formatted = String.format("%06d", score);
+
+        canvas.drawText(formatted,  GamePanel.bgWidth - 140, 50, paint);
     }
 
     private void livesDraw(Canvas canvas) {
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.FILL);
-        paint.setTextSize(50);
-        canvas.drawText("Lives: " + Integer.toString(lives), 30, 150, paint);
+        paint.setTextSize(35);
+        paint.setTypeface(Typeface.create("Helvetica", Typeface.NORMAL));
+
+        Bitmap image = BitmapFactory.decodeResource(getResources(),R.drawable.playerlife);
+        canvas.drawBitmap(image, 20, 20,null);
+        canvas.drawText("x 0" + Integer.toString(lives), 25 + image.getWidth(), 20 + image.getHeight(), paint);
     }
 
     private void drawContinue(Canvas canvas) {
@@ -626,7 +636,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(50);
-        canvas.drawText("Continue?", bgWidth*scaleFactorX/2, bgHeight*scaleFactorY/2, paint);
+
+        canvas.drawText("Game Over!", bgWidth*scaleFactorX/3, bgHeight*scaleFactorY/2, paint);
+        canvas.drawText("TOUCH to play again", bgWidth*scaleFactorX/3, bgHeight*scaleFactorY/2 + 50, paint);
     }
 
     private void drawStartGame(Canvas canvas) {
@@ -636,7 +648,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setColor(Color.WHITE);
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(50);
-        canvas.drawText("TOUCH to start", bgWidth*scaleFactorX/4, bgHeight*scaleFactorY/2, paint);
+        canvas.drawText("TOUCH to start", bgWidth * scaleFactorX / 4, bgHeight * scaleFactorY / 2, paint);
     }
 
     public void buttonPressed(int n) {
@@ -688,13 +700,13 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 long elapsed = (System.nanoTime() - laserStartTime)/1000000;
 
                 if(laserType == 0) {
-                    if(elapsed > 400){
+                    if(elapsed > 200){
                         lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser),
                                 player.getX()+player.getWidth(),player.getY()+player.getHeight()/2));
                         laserStartTime = System.nanoTime();
                     }
                 } else {
-                    if(elapsed > 300){
+                    if(elapsed > 150){
                         int halfOfTheHeightOfTheLaserSprite = 23;
                         lasers.add(new Laser(BitmapFactory.decodeResource(getResources(), R.drawable.laser2),
                                 player.getX()+player.getWidth(),player.getY()+player.getHeight()/2 - halfOfTheHeightOfTheLaserSprite));

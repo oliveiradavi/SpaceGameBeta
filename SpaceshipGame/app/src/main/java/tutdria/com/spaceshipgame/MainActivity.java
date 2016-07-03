@@ -16,7 +16,7 @@ public class MainActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         gamePanel = new GamePanel(this);
-       // setContentView(R.layout.layout);
+      //setContentView(R.layout.layout);
         setContentView(gamePanel);
     }
 
