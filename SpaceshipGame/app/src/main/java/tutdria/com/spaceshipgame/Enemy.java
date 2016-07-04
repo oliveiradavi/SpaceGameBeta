@@ -5,20 +5,21 @@ import android.graphics.Canvas;
 
 public class Enemy extends GameObject {
     Bitmap image;
-    private int velocityX = 15;
-    private int velocityY = 4;
+    private int velocityX = 12;
+    private int velocityY = 5;
     private final boolean up = true;
     private final boolean down = false;
     private boolean item = false;
     private boolean fire = false;
     private long createdTime;
     private boolean move;
-    private int xDistance = 0;
     private long startTime;
     private long elapsedTime;
-    private boolean timeToDie = false;
+    private boolean timeToRun = false;
+    private int initialY;
+    private int lineX;
 
-    public Enemy(Bitmap sprite, int y) {
+    public Enemy(Bitmap sprite, int y, int line) {
 
         createdTime = System.nanoTime()/1000000 + 1000;
         image = sprite;
@@ -28,11 +29,34 @@ public class Enemy extends GameObject {
 
         x = GamePanel.bgWidth;
         this.y = y;
+        initialY = y;
 
         if(y>GamePanel.bgHeight/2) {
             move = up;
         } else{
             move = down;
+        }
+
+        switch (line) {
+            case 0: {
+                this.lineX = (int)(GamePanel.bgWidth*0.55);
+                break;
+            }
+
+            case 1: {
+                this.lineX = (int)(GamePanel.bgWidth*0.65);
+                break;
+            }
+
+            case 2: {
+                this.lineX = (int)(GamePanel.bgWidth*0.75);
+                break;
+            }
+
+            case 3: {
+                this.lineX = (int)(GamePanel.bgWidth*0.85);
+                break;
+            }
         }
 
         startTime = System.nanoTime();
@@ -48,6 +72,7 @@ public class Enemy extends GameObject {
 
         x = GamePanel.bgWidth;
         this.y = y;
+        initialY = y;
 
         if(y>GamePanel.bgHeight/2) {
             move = up;
@@ -56,11 +81,14 @@ public class Enemy extends GameObject {
         }
 
         item = b;
+        if(item) {
+            lineX = (int)(GamePanel.bgWidth*0.55);
+        }
 
         startTime = System.nanoTime();
     }
 
-    public Enemy(Bitmap sprite, int y, int x) {
+    public Enemy(Bitmap sprite, int y, int x, int line) {
 
         createdTime = System.nanoTime()/1000000 + 1000;
         image = sprite;
@@ -70,8 +98,29 @@ public class Enemy extends GameObject {
 
         this.x = x;
         this.y = y;
+        initialY = y;
 
-        xDistance = x - GamePanel.bgWidth;
+        switch (line) {
+            case 0: {
+                this.lineX = (int)(GamePanel.bgWidth*0.55);
+                break;
+            }
+
+            case 1: {
+                this.lineX = (int)(GamePanel.bgWidth*0.65);
+                break;
+            }
+
+            case 2: {
+                this.lineX = (int)(GamePanel.bgWidth*0.75);
+                break;
+            }
+
+            case 3: {
+                this.lineX = (int)(GamePanel.bgWidth*0.85);
+                break;
+            }
+        }
 
         if(y>GamePanel.bgHeight/2) {
             move = up;
@@ -104,30 +153,38 @@ public class Enemy extends GameObject {
 
     public void update() {
 
-        elapsedTime = System.nanoTime()/1000000 - startTime/1000000;
-        if(elapsedTime > 1500) {
-            fire = true;
-            startTime = System.nanoTime();
-        }
-
-        if(GamePanel.bgWidth - xDistance > GamePanel.bgWidth-GamePanel.bgWidth/3) {
-            x-= velocityX;
-            xDistance += velocityX;
-        }
-        else{
-            if(move == up) {
-                y-=velocityY;
-            } else{
-                y+=velocityY;
+        if (x < GamePanel.bgWidth) {
+            elapsedTime = System.nanoTime() / 1000000 - startTime / 1000000;
+            if (elapsedTime > 1500) {
+                fire = true;
+                startTime = System.nanoTime();
             }
+        }
 
-            if(!timeToDie) {
-                if(y<0) {
-                    move = down;
-                    timeToDie = true;
-                } else if(y>GamePanel.bgHeight) {
-                    move = up;
-                    timeToDie = true;
+        if(item) {
+            x-= velocityX;
+        } else{
+            if (x > lineX) {
+                x -= velocityX;
+            } else {
+                if (move == up) {
+                    y -= velocityY;
+                } else {
+                    y += velocityY;
+                }
+
+                if(!timeToRun) {
+                    if (y < 0 || y > GamePanel.bgHeight - image.getHeight()) {
+                        timeToRun = true;
+
+                        if(move == up) {
+                            move = down;
+                        } else{
+                            move = up;
+                        }
+                    }
+                } else{
+                    x-=velocityX;
                 }
             }
         }

@@ -267,16 +267,24 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         if(player.getPlaying()) {
             if(!created) {
                 int totalY = bgHeight;
+                Bitmap imageEnemy1 = BitmapFactory.decodeResource(getResources(),R.drawable.enemy);
                 switch (enemySwitch) {
+
                     case 0: {
-                        numberOfEnemies = 4;
+                        numberOfEnemies = 8;
                         enemySwitch++;
                         created = true;
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*2)));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*4)));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*5)));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*3)));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),bgWidth + 65*0,0));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),bgWidth + 65*1,1));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),bgWidth + 65*2,2));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),bgWidth + 65*3,3));
+
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*0,0));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*1,1));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*2,2));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*3,3));
                         timeUntilNext = 0;
+
                         break;
                     }
 
@@ -284,30 +292,59 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                         numberOfEnemies = 3;
                         enemySwitch++;
                         created = true;
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5)));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),1));
                         enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy2),totalY/2 - (int)(30.5*scaleFactorY/1.5),true));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5)));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*2.5),1));
                         timeUntilNext = 0;
                         break;
                     }
 
                     case 2: {
-                        numberOfEnemies = 8;
+                        numberOfEnemies = 16;
+                        enemySwitch++;
+                        created = true;
+
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*2),0));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*4),0));
+
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*2),bgWidth + bgWidth/2, 1));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*4),bgWidth + bgWidth/2, 1));
+
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*2),bgWidth*2, 2));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*4),bgWidth*2, 2));
+
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*2),bgWidth*2 + bgWidth/2, 3));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*4),bgWidth*2 + bgWidth/2, 3));
+
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*5),0));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*3),0));
+
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*5),bgWidth + bgWidth/2, 1));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*3),bgWidth + bgWidth/2, 1));
+
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*5),bgWidth*2, 2));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*3),bgWidth*2, 2));
+
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*5),bgWidth*2 + bgWidth/2, 3));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*3),bgWidth*2 + bgWidth/2, 3));
+
+                        timeUntilNext = 0;
+                        break;
+                    }
+
+                    case 3: {
+                        numberOfEnemies = 4;
                         enemySwitch = 0;
                         created = true;
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*0));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*1));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*2));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),(int)(30.5*scaleFactorY*1.5),bgWidth + 65*3));
-
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*0));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*1));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*2));
-                        enemies.add(new Enemy(BitmapFactory.decodeResource(getResources(),R.drawable.enemy),totalY - (int)(30.5*scaleFactorY*2.5),bgWidth + 65*3));
-
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*2),1));
+                        enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*4),1));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*5),1));
+                        enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*3),1));
                         timeUntilNext = 10000;
                         break;
                     }
+
+
                 }
             }
 
@@ -316,7 +353,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
                     for (int i = 0; i < enemies.size(); i++) {
                         enemies.get(i).update();
-                        if (enemies.get(i).getY() < -50 ||  enemies.get(i).getY() > bgHeight + 50) {
+                        if (enemies.get(i).getX() < -50 ||  enemies.get(i).getY() < -50 ||  enemies.get(i).getY() > bgHeight + 50) {
                             enemies.remove(i);
                             enemiesRemoved++;
                         } else if(collision(enemies.get(i),player)) {
@@ -429,7 +466,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             if(collision(enemyLasers.get(i),player)) {
                 if(!invencibility) {
                     enemyLasers.remove(i);
-                    resetGame();
+                   // resetGame();
                     break;
                 }
             }
@@ -601,7 +638,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setColor(Color.YELLOW);
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(60);
-     //   canvas.drawText(Integer.toString(fps), GamePanel.bgWidth - 90, GamePanel.bgHeight - 60, paint);
+        canvas.drawText(Integer.toString(fps), GamePanel.bgWidth - 90, GamePanel.bgHeight - 60, paint);
     }
 
     private void scoreDraw(Canvas canvas) {
@@ -652,8 +689,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void buttonPressed(int n) {
-        System.out.println("My x is: "+x[n]);
-        System.out.println("My y is: "+y[n]);
+       // System.out.println("My x is: "+x[n]);
+      //  System.out.println("My y is: "+y[n]);
 
         int scaledX = (int) (joystick.getX()*scaleFactorX);
         int scaledY = (int) (joystick.getY()*scaleFactorY);

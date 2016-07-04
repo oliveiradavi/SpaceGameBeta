@@ -6,7 +6,7 @@ import android.graphics.Canvas;
 public class EnemyLaser extends GameObject {
 
     private Bitmap image;
-    private int velocity = 20;
+    private int velocity = 25;
 
     public EnemyLaser(Bitmap sprite, int x, int y) {
 

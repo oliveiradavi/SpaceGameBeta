@@ -22,8 +22,10 @@ public class Meteor extends GameObject {
         width = image[0].getWidth();
         height = image[0].getHeight();
 
+
+
         x = GamePanel.screenWidth+width;
-        y = rand.nextInt(GamePanel.screenHeight+height-height)+height;
+        y = rand.nextInt(GamePanel.screenHeight - height);
 
         animation.setFrames(image);
         animation.setDelay(100);
