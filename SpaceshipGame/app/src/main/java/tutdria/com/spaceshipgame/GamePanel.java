@@ -35,16 +35,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private ArrayList <EnemyLaser> enemyLasers;
     private ArrayList <Enemy> enemies;
     private ArrayList <Explosion> explosions;
+    private ArrayList <Boss> boss;
     private Item item;
     private long meteorsStartTime;
     private long laserStartTime;
     private boolean threadRunning = false;
-    boolean still = false;
+    private boolean still = false;
     private long gameStartTime;
     private boolean enemiesAlive = false;
     private boolean created = false;
     private boolean stopMeteors = false;
     private boolean continueGame = true;
+    private boolean bossAlive = false;
     private int enemiesRemoved;
     private long timeUntilNext;
     private int enemySwitch;
@@ -54,9 +56,11 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private static float scaleFactorY;
     private int laserType;
     private int lives;
+    private int damage;
     private boolean gameStarted;
     private boolean invencibility;
     private long invencibilityTime;
+    private int hp;
 
     public GamePanel(Context context) {
         super(context);
@@ -91,6 +95,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         player = new Player(BitmapFactory.decodeResource(getResources(),R.drawable.player));
         fire = new Fire(BitmapFactory.decodeResource(getResources(),R.drawable.firespr));
         joystick = new Joystick(BitmapFactory.decodeResource(getResources(),R.drawable.joy2));
+        boss = new ArrayList<Boss>();
         meteors = new ArrayList<Meteor>();
         lasers = new ArrayList<Laser>();
         enemyLasers = new ArrayList<EnemyLaser>();
@@ -107,6 +112,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         enemiesRemoved = 0;
         enemySwitch = 0;
         pointerIndex = 0;
+        damage = 1;
         enemiesAlive = false;
         created = false;
         stopMeteors = false;
@@ -237,6 +243,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             updateEnemyLasers();
             item.update();
 
+            for(int i=0;i<boss.size();i++) {
+                boss.get(i).update();;
+            }
+
             for(int i=0;i<explosions.size();i++) {
                 if(explosions.get(i).getPlayed()) {
                     explosions.remove(i);
@@ -248,6 +258,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             if(collision(player,item)) {
                 item.setX(-50);
                 laserType = 1;
+                damage = 2;
             }
 
             if(enemiesAlive) {
@@ -268,12 +279,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             if(!created) {
                 int totalY = bgHeight;
                 Bitmap imageEnemy1 = BitmapFactory.decodeResource(getResources(),R.drawable.enemy);
+                Bitmap imageEnemy2 = BitmapFactory.decodeResource(getResources(),R.drawable.bossfirst);
                 switch (enemySwitch) {
 
                     case 0: {
                         numberOfEnemies = 8;
                         enemySwitch++;
                         created = true;
+
                         enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),bgWidth + 65*0,0));
                         enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),bgWidth + 65*1,1));
                         enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*1.5),bgWidth + 65*2,2));
@@ -334,14 +347,23 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
                     case 3: {
                         numberOfEnemies = 4;
-                        enemySwitch = 0;
+                        enemySwitch++;
                         created = true;
                         enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*2),1));
                         enemies.add(new Enemy(imageEnemy1,(int)(30.5*scaleFactorY*4),1));
                         enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*5),1));
                         enemies.add(new Enemy(imageEnemy1,totalY - (int)(30.5*scaleFactorY*3),1));
-                        timeUntilNext = 10000;
+                        timeUntilNext = 0;
                         break;
+                    }
+
+                    case 4: {
+                        created = true;
+                        bossAlive = true;
+                        numberOfEnemies = 1;
+                        enemySwitch = 0;
+                        boss.add(new Boss(imageEnemy2));
+                        timeUntilNext = 10000;
                     }
 
 
@@ -350,9 +372,56 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
             if(created) {
                 if(player.getPlaying()) {
+                    if(bossAlive){
+                        for(int i=0;i<boss.size();i++) {
+                            boss.get(i).update();
+
+                            if(!invencibility) {
+                                if(collision(boss.get(i),player)) {
+                                    resetGame();
+                                }
+                            }
+
+                            Bitmap image;
+                            image = BitmapFactory.decodeResource(getResources(),R.drawable.bosslaser);
+
+                            if(boss.get(i).getFire()) {
+
+                                if(boss.get(i).getBehavior() == 3) {
+                                    image = BitmapFactory.decodeResource(getResources(),R.drawable.bosslaser2);
+
+                                    enemyLasers.add(new EnemyLaser(image, boss.get(i).getX(), boss.get(i).getY() + boss.get(i).getHeight() - image.getHeight()/2));
+                                    enemyLasers.add(new EnemyLaser(image, boss.get(i).getX(), boss.get(i).getY() - image.getHeight()/2));
+
+                                    boss.get(i).setFire(false);
+                                } else {
+                                    enemyLasers.add(new EnemyLaser(image, boss.get(i).getX(), boss.get(i).getY() + boss.get(i).getHeight()/2 - image.getHeight()/2));
+                                    boss.get(i).setFire(false);
+                                }
+                            }
+                        }
+
+                        for(int i=0;i<lasers.size();i++) {
+                            for(int j=0;j<boss.size();j++) {
+                                if(collision(lasers.get(i),boss.get(j))) {
+                                    lasers.remove(i);
+
+                                    boss.get(i).receiveDamge(damage);
+                                    if(boss.get(i).getHP() <= 0) {
+                                        boss.remove(i);
+                                        enemiesRemoved++;
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+
+                    for(int i=0;i<enemies.size();i++) {
+                        enemies.get(i).update();
+                    }
 
                     for (int i = 0; i < enemies.size(); i++) {
-                        enemies.get(i).update();
                         if (enemies.get(i).getX() < -50 ||  enemies.get(i).getY() < -50 ||  enemies.get(i).getY() > bgHeight + 50) {
                             enemies.remove(i);
                             enemiesRemoved++;
@@ -390,7 +459,6 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                             }
                         }
                     }
-
                 } else {
                     for (int i = 0; i < enemies.size(); i++) {
                         enemies.remove(i);
@@ -406,7 +474,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 stopMeteors = false;
                 gameStartTime = System.nanoTime();
             }
-        }else {
+        } else {
 
             for(int i=0;i<enemies.size();i++){
                 enemies.remove(i);
@@ -460,13 +528,18 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
+
         for(int i=0;i<enemyLasers.size();i++) {
             enemyLasers.get(i).update();
+        }
 
-            if(collision(enemyLasers.get(i),player)) {
-                if(!invencibility) {
-                    enemyLasers.remove(i);
-                   // resetGame();
+
+        for(int i=0;i<enemyLasers.size();i++) {
+
+            if(!invencibility) {
+                if(collision(enemyLasers.get(i),player)) {
+                enemyLasers.remove(i);
+                resetGame();
                     break;
                 }
             }
@@ -574,6 +647,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             player.resetPosition();
             player.resetMove();
             laserType = 0;
+            damage = 1;
             invencibility = true;
             player.setImage(BitmapFactory.decodeResource(getResources(),R.drawable.playerinvencible));
             invencibilityTime = System.nanoTime()/1000000;
@@ -598,6 +672,10 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
             for(Enemy e: enemies) {
                 e.draw(canvas);
+            }
+
+            for(Boss b: boss) {
+                b.draw(canvas);
             }
 
             for(Meteor m: meteors) {
@@ -628,6 +706,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             if(!continueGame) {
                 drawContinue(canvas);
             }
+
+            drawHP(canvas);
 
             canvas.restoreToCount(savedState);
         }
@@ -661,7 +741,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setTextSize(35);
         paint.setTypeface(Typeface.create("Helvetica", Typeface.NORMAL));
 
-        Bitmap image = BitmapFactory.decodeResource(getResources(),R.drawable.playerlife);
+        Bitmap image = BitmapFactory.decodeResource(getResources(), R.drawable.playerlife);
         canvas.drawBitmap(image, 20, 20,null);
         canvas.drawText("x 0" + Integer.toString(lives), 25 + image.getWidth(), 20 + image.getHeight(), paint);
     }
@@ -674,8 +754,20 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(50);
 
-        canvas.drawText("Game Over!", bgWidth*scaleFactorX/3, bgHeight*scaleFactorY/2, paint);
+        canvas.drawText("Game Over!", bgWidth * scaleFactorX / 3, bgHeight * scaleFactorY / 2, paint);
         canvas.drawText("TOUCH to play again", bgWidth*scaleFactorX/3, bgHeight*scaleFactorY/2 + 50, paint);
+    }
+
+    private void drawHP(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(50);
+
+        String hp = boss.get(0).getHP()+"";
+
+        canvas.drawText(hp, bgWidth*scaleFactorX/3, bgHeight*scaleFactorY/2, paint);
+
     }
 
     private void drawStartGame(Canvas canvas) {
